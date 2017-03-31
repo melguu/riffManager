@@ -1,14 +1,13 @@
 'use strict';
-const dotenv = require('dotenv').config();
-const moment = require('moment');
-const express = require('express');
-const mongoose = require('mongoose');
-const exif = require('exif');
-const multer_ = require('multer');
-const sharp_ = require('sharp');
-const bodyParser = require('body-parser');
-const fileSystem = require('fs');
+const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 
-app.use(express.static('public/'));
-app.listen(3000);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+const routes = require("./routes/routes.js")(app);
+
+const server = app.listen(3000, function () {
+    console.log("Listening on port %s...", server.address().port);
+});
