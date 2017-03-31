@@ -1,0 +1,26 @@
+{ "riffs": [
+    {
+        "id": 1,
+        "title": "proggy chorus",
+        "instrument": "guitar",
+        "tuning": "Drop-Ab"
+    },
+    {
+        "id": 2,
+        "title": "shreddy lead",
+        "instrument": "guitar",
+        "tuning": "Drop-Ab"
+    },
+    {
+        "id": 3,
+        "title": "djenty verse",
+        "instrument": "guitar",
+        "tuning": "Drop-Ab"
+    },
+    {
+        "id": 4,
+        "title": "spacey ambient layer",
+        "instrument": "guitar",
+        "tuning": "Drop-Ab"
+    }
+]}
