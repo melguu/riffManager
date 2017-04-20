@@ -13,7 +13,7 @@
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
     "moment": "^2.18.1",
-    "mongoose": "^4.9.2"
+    "mongoose": "^4.9.5"
   },
   "devDependencies": {
     "eslint": "^3.18.0",
