@@ -1,48 +1,40 @@
 'use strict';
-const express = require("express");
-const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
+const express = require('express');
+const session = require('express-session');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv').config();
 const app = express();
-mongoose.connect('mongodb://localhost/riffManager');
-
-var Riff = mongoose.model('Riff', {
-    name: String,
-    creator: String,
-    instrument: String,
-    description: String,
-    length: Int,
-    key: String,
-    speed: Int,
-    genre: String,
-    type: String
-});
-
-var SongWorkspace = mongoose.model('SongWorkspace', {
-    name: String,
-    creator: String,
-    users: Array,
-    song: String,
-    riffs: Array,
-    messages: Array,
-});
-
-var Song = mongoose.model('Song', {
-    name: String,
-    creator: String,
-    instrument: String,
-    description: String,
-    length: Int,
-    key: String,
-    speed: Int,
-    genre: String,
-    riffs: Array
-});
-
+mongoose.connect('mongodb://'+ process.env.DB_USER + ':' + process.env.DB_PWD + process.env.DB_HOST);
+app.use(session({ secret: process.env.SESS_SECRET, resave: false, saveUninitialized: false, cookie: { maxAge: 900000 }}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const routes = require("./routes/routes.js")(app);
+// HTTPS
+const sslkey = fs.readFileSync('ssl-key.pem');
+const sslcert = fs.readFileSync('ssl-cert.pem');
+const options = {
+    key: sslkey,
+    cert: sslcert
+};
+
+// MARK: routes
+const user = require('./routes/user.js');
+const riff = require('./routes/riff.js');
+const songWorkspace = require('./routes/songWorkspace.js');
+app.use('/users', user);
+app.use('/riffs', riff);
+app.use('/songWorkspace', songWorkspace);
 
 const server = app.listen(3000, function () {
-    console.log("Listening on port %s...", server.address().port);
+    console.log('Listening on port %s...', server.address().port);
 });
+/*const server = https.createServer(options, app).listen(3000);
+
+http.createServer((req, res) => {
+    res.writeHead(301, { 'Location': 'https://localhost:3000' + req.url });
+    res.end();
+}).listen(8080);*/
