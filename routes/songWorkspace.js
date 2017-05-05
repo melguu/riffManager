@@ -1,49 +1,39 @@
 /**
  * Created by milosberka on 24.4.2017.
  */
-const DB = require('mongoose');
 const express = require('express');
 const router = express.Router();
-
-const songWorkspaceSchema = DB.Schema({
-    name: String,
-    creator: {type: DB.Schema.Types.ObjectId, ref: 'User'},
-    users: [{type: DB.Schema.Types.ObjectId, ref: 'User'}],
-    song: {type: DB.Schema.Types.ObjectId, ref: 'Song'},
-    riffs: [{type: DB.Schema.Types.ObjectId, ref: 'Riff'}],
-    messages: [{type: DB.Schema.Types.ObjectId, ref: 'Message'}]
-});
-
-const songSchema = DB.Schema({
-    name: String,
-    creator: {type: DB.Schema.Types.ObjectId, ref: 'User'},
-    instrument: String,
-    description: String,
-    length: Number,
-    key: String,
-    speed: Number,
-    genre: String,
-    riffs: [{type: DB.Schema.Types.ObjectId, ref: 'Riff'}]
-});
-
-const messageSchema = DB.Schema({
-    message: String,
-    timestamp: {type: Date, default: Date.now},
-    sender: {type: DB.Schema.Types.ObjectId, ref: 'User'}
-});
-
-const SongWorkspace = DB.model('SongWorkspace', songWorkspaceSchema);
-const Song = DB.model('Song', songSchema);
-const Message = DB.model('Message', messageSchema);
+const database = require('../modules/database');
 
 router.route('/')
     .post((req, res) => {
-        res.send('Workspace created');
+        const songData = {
+            name: req.body.name,
+            creator: req.user._id,
+            instrument: req.body.instrument,
+            description: req.body.description,
+            key: req.body.key,
+            speed: req.body.speed,
+            genre: req.body.genre,
+            riffs: []
+        };
+        database.createObject('Song', songData, (error, data) => {
+            const workspaceData = {
+                name: data.name,
+                creator: data.creator,
+                users: [data.creator],
+                song: data._id,
+                riffs: [],
+                messages: []
+            }
+            database.createObject('SongWorkspace', workspaceData, (error, data) => {
+               res.send('Created song workspace: ' + JSON.stringify(data));
+            });
+        });
     })
     .get((req, res) => {
-        SongWorkspace.find({}, (err, data) => {
-            if (err) return res.send(err);
-            res.send(JSON.stringify(data[Math.floor(Math.random() * data.length)]));
+        database.getObjects('SongWorkspace', {creator: req.user}, (error, data) => {
+            res.send(data);
         });
     });
 
@@ -53,18 +43,42 @@ router.route('/song')
         res.send('Song created');
     })
     .get((req, res) => {
-        Song.find({}, (err, data) => {
-            if (err) return res.send(err);
-            res.send(JSON.stringify(data[Math.floor(Math.random() * data.length)]));
+        database.getObjects('Song', {creator: req.user}, (error, data) => {
+            res.send(data);
+        });
+    });
+
+router.route('/riff')
+    .post((req, res) => {
+        const filter = {
+            _id: req.body.workspace_id
+        };
+        const data = {
+            $push: {riffs: req.body.riff_id}
+        };
+        database.updateObject('SongWorkspace', filter, data, (error, data) => {
+            res.send('Added riff to workspace: ' + data);
+        });
+    })
+    .get((req, res) => {
+        const filter = {
+            _id: req.query.workspace_id
+        };
+        database.getObject('SongWorkspace', filter, (error, data) => {
+            const riff = data.riffs.filter((riff) => riff._id == req.query.riff_id);
+            res.send('Riff in workspace: ' + riff);
         });
     });
 
 router.route('/riffs')
-    .post((req, res) => {
-        res.send('Added riff to workspace');
-    })
     .get((req, res) => {
-        res.send('Riffs in workspace');
+        const filter = {
+            _id: req.query.id
+        };
+        database.getObject('SongWorkspace', filter, (error, data) => {
+            const riffs = data.riffs
+            res.send('Riffs in workspace: ' + riffs);
+        });
     });
 
 router.route('/users')

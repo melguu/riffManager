@@ -1,49 +1,59 @@
-const DB = require('mongoose');
 const express = require('express');
 const router = express.Router();
-
-const userSchema = DB.Schema({
-    username: String,
-    password: String
-});
-
-const User = DB.model('User', userSchema);
+const database = require('../modules/database');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 router.route('/')
     .post((req, res) => {
-        const newUser = new User({
-            username: req.body.username,
-            password: req.body.password
+        database.createObject('User', req.body, (error, data) => {
+           console.log(data);
+           res.send(data);
         });
-        newUser.save((err, newUser) => {
-            if (err) return res.send(err);
-            console.log(newUser);
-        });
-        res.send('User added');
     })
     .get((req, res) => {
-        User.find({}, (err, data) => {
-            if (err) return res.send(err);
-            res.send(JSON.stringify(data[Math.floor(Math.random() * data.length)]));
+        const filter = {username: req.query.username}
+        database.getObject('User', filter, (error, data) => {
+            console.log(data);
+            res.send(data);
         });
     });
 
+// Authentication
 router.route('/login')
-    .post((req, res) => {
-        let sesh = req.session;
-        let user = null;
-        User.find({username: req.body.username, password: req.body.password}, '_id', (err, data) => {
-            if (err) return res.send(err);
-            if (data[0] == undefined) return res.send('Incorrect username or password');
-            console.log(data[0]._id);
-            user = data[0]._id;
-            sesh.currentUser = user
-            res.send('POST Logged in as: ' + sesh.currentUser);
-        });
+    .post(passport.authenticate('local'), (req, res) => {
+        res.send(req.user);
     })
     .get((req, res) => {
-        let sesh = req.session;
-        res.send('GET Logged in as: ' + sesh.currentUser);
+        res.send('Logged in as: ' + JSON.stringify(req.user));
     });
+
+router.route('/logout')
+    .get((req, res) => {
+        req.logout();
+        res.send('Logged out, current user: ' + JSON.stringify(req.user));
+    });
+
+passport.use(new LocalStrategy(
+    (username, password, done) => {
+        const filter = {
+            username: username,
+            password: password
+        };
+        database.getObject('User', filter, (error, data) => {
+            if (error) return res.send(error);
+            if (data == undefined) return done(null, false, {message: 'Incorrect credentials.'});
+            done(null, data);
+        });
+    }
+));
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+    done(null, user);
+});
 
 module.exports = router;
