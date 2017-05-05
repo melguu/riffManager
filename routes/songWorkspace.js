@@ -83,18 +83,52 @@ router.route('/riffs')
 
 router.route('/users')
     .post((req, res) => {
-        res.send('Added user to workspace');
+            const filter = {
+                _id: req.body.workspace_id
+            };
+            const data = {
+                $push: {users: req.body.user_id}
+            };
+            database.updateObject('SongWorkspace', filter, data, (error, data) => {
+                res.send('Added user to workspace: ' + data);
+            });
     })
     .get((req, res) => {
-        res.send('Users in workspace');
+        const filter = {
+            _id: req.query.id
+        };
+        database.getObject('SongWorkspace', filter, (error, data) => {
+            const users = data.users;
+            res.send('Users in workspace: ' + users);
+        });
     });
 
 router.route('/messages')
     .post((req, res) => {
-        res.send('Posted message');
+        const messageData = {
+            message: req.body.message,
+            sender: req.user._id
+        };
+        database.createObject('Message', messageData,  (error, data) => {
+            const filter = {
+                _id: req.body.workspace_id
+            };
+            const dataForWorkspace = {
+                $push: {messages: data._id}
+            };
+            database.updateObject('SongWorkspace', filter, dataForWorkspace, (error, data) => {
+                res.send('Posted message: ' + data);
+            });
+        });
     })
     .get((req, res) => {
-        res.send('Messages in workspace');
+        const filter = {
+            _id: req.query.id
+        };
+        database.getObject('SongWorkspace', filter, (error, data) => {
+            const messages = data.messages
+            res.send('Messages in workspace: ' + messages);
+        });
     });
 
 module.exports = router;

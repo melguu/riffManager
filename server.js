@@ -46,7 +46,7 @@ const options = {
     next();
 });*/
 
-// Routes
+// API routes
 app.all('/api/*', checkAuthentication);
 
 const user = require('./routes/user.js');
@@ -56,6 +56,8 @@ app.use('/api/users', user);
 app.use('/api/riffs', riff);
 app.use('/api/songWorkspace', songWorkspace);
 app.use(express.static('public'));
+
+// Frontend routes
 app.get('/', (req, res) => {
     res.sendFile('public/index.html', { root: './' });
 });
