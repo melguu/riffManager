@@ -35,6 +35,22 @@ router.route('/')
     });
 
 router.route('/single')
+    /**
+    * @api {post} /api/riffs/single Upload new riff
+    * @apiName Upload riff
+    * @apiGroup Riff
+    *
+    * @apiParam {name} Name for riff
+    * @apiParam {instrument} Instrument
+    * @apiParam {description} Description
+    * @apiParam {length} Length
+    * @apiParam {key} Key
+    * @apiParam {speed} Speed
+    * @apiParam {genre} Genre
+    * @apiParam {type} Type
+    *
+    * @apiSuccess {String} Riff uploaded + riff data
+    * */
     .post(upload.single('riff'), (req, res) => {
         const riffData = {
             name: req.body.name,
@@ -52,6 +68,15 @@ router.route('/single')
             res.send('Riff uploaded: ' + data);
         });
     })
+    /**
+     * @api {get} /api/riffs/single Get riff audio by ID
+     * @apiName Get riff
+     * @apiGroup Riff
+     *
+     * @apiParam {id} Riff ID
+     *
+     * @apiSuccess {File} Riff audio file
+     * */
     .get((req, res) => {
         const filter = {
             _id: req.query.id

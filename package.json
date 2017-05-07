@@ -10,6 +10,7 @@
   "author": "Milos Berka",
   "license": "ISC",
   "dependencies": {
+    "apidoc": "^0.17.5",
     "body-parser": "^1.17.1",
     "cors": "^2.8.3",
     "dotenv": "^4.0.0",
@@ -31,6 +32,13 @@
   },
   "bugs": {
     "url": "https://github.com/milosbe/riffManager/issues"
+  },
+  "apidoc": {
+    "name": "Riff manager",
+    "version": "0.1.0",
+    "description": "Riff manager app",
+    "title": "Riff manager - apiDoc",
+    "url" : "<root URL>"
   },
   "homepage": "https://github.com/milosbe/riffManager"
 }
